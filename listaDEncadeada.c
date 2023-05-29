@@ -75,12 +75,17 @@ lista libera_lista(lista lista) {
 
     while(no_atual != NULL){
 
-        prox_no = no_atual->prox; //So libera o primeiro e não corrige a quantidade
+        prox_no = no_atual->prox;
+        no_atual->ante = NULL;
+        no_atual->prox = NULL;
         free(no_atual);
         no_atual = prox_no;
-        lista.quantidade += -1;
+        lista.quantidade -= 1;
 
     }
+
+    lista.fim = NULL;
+    lista.inicio = NULL;
 
     return lista;
 
@@ -159,7 +164,7 @@ lista insere_no_inicio(lista lista, float valor) {
     
     else {
 
-        no *no_atual = lista.inicio; //Nao funciona
+        no *no_atual = lista.inicio;
         
         novo_no->prox = lista.inicio;
         no_atual->ante = novo_no;
@@ -175,7 +180,7 @@ lista insere_no_inicio(lista lista, float valor) {
 
 lista remove_no_valor(lista lista, float valor) {
 
-    no *no_atual, *no_anterior;
+    no *no_atual, *no_anterior, *no_ajudante;
     no_atual = lista.inicio;
     int total = 0;
 
@@ -186,20 +191,28 @@ lista remove_no_valor(lista lista, float valor) {
 
             if(total == 1){
 
-                lista.inicio = no_atual->prox;//corrigir lista.fim/lista.inicio e quantidade
+                lista.inicio = no_atual->prox;
+                no_atual = lista.inicio;
+                no_atual->ante = NULL;
+                lista.inicio = no_atual;
 
             }
 
             else{
 
                 no_anterior->prox = no_atual->prox;
+                no_ajudante = no_anterior->prox;
+                no_ajudante->ante = no_anterior;
 
             }
+
+            lista.quantidade -= 1;
 
         }        
 
         no_anterior = no_atual;
         no_atual = no_atual->prox;
+      
 
     }
 
@@ -233,7 +246,7 @@ lista insere_no_posicao(lista lista, float valor, int posicao){
 
         no_atual->ante = novo_no;
         novo_no->prox = no_atual;
-        lista.inicio = novo_no;//lista.inicio e lista.fim dificuldades; e arrumar quantidade
+        lista.inicio = novo_no;
 
     }
 
@@ -248,8 +261,12 @@ lista insere_no_posicao(lista lista, float valor, int posicao){
 
         novo_no->prox = no_atual;
         no_anterior->prox = novo_no;
+        no_atual->ante = novo_no;
+        novo_no->ante = no_anterior;
 
     }
+
+    lista.quantidade += 1;
 
     return lista;
 
@@ -257,27 +274,34 @@ lista insere_no_posicao(lista lista, float valor, int posicao){
 
 lista remove_no_posicao(lista lista, int posicao){
 
-    no *no_atual, *no_anterior;
+    no *no_atual, *no_anterior, *no_ajudante;
     no_atual = lista.inicio;
-
-    for(int i = 1; i < posicao; i++){
-
-        no_anterior = no_atual;
-        no_atual = no_atual->prox;
-
-    }
-
+    
     if(posicao == 1){
 
-        lista.inicio = no_atual->prox;//Corrigir lista.fim/inicio e arrumar quantidade
+        lista.inicio = no_atual->prox;
+        no_atual = lista.inicio;
+        no_atual->ante = NULL;
+        lista.inicio = no_atual;
 
     }
 
     else{
+        
+        for(int i = 1; i < posicao; i++){
+
+            no_anterior = no_atual;
+            no_atual = no_atual->prox;
+
+        }
 
         no_anterior->prox = no_atual->prox;
+        no_ajudante = no_anterior->prox;
+        no_ajudante->ante = no_anterior;
 
     }
+
+    lista.quantidade -= 1;
     
     return lista;
 
@@ -289,6 +313,8 @@ int main(){
     minha_lista_d.inicio = NULL;
     minha_lista_d.fim = NULL;
     minha_lista_d.quantidade = 0;
+
+    printf("Verificando se esta vazia: \n");
 
     if(estah_vazia(minha_lista_d)==1){
 
@@ -306,6 +332,8 @@ int main(){
     minha_lista_d = insere_no_fim(minha_lista_d, 3);
     minha_lista_d = insere_no_fim(minha_lista_d, 6); 
     minha_lista_d = insere_no_fim(minha_lista_d, 7);
+
+    printf("Inserindo no fim: \n");
 
     if(estah_vazia(minha_lista_d)==1){
 
@@ -325,20 +353,50 @@ int main(){
     
     imprime_nos_reverso(minha_lista_d);
 
-    //remove_no_posicao(minha_lista_d, 1);
+    printf("Removendo da posicao: \n");
 
-    //insere_no_posicao(minha_lista_d, 7, 0);
+    minha_lista_d = remove_no_posicao(minha_lista_d, 2);
+    
+    imprime_lista(minha_lista_d);
+    
+    printf("O tamanho e %d\n", minha_lista_d.quantidade);
+
+    imprime_nos_reverso(minha_lista_d);
+
+    printf("Inserindo na posicao: \n");
+
+    minha_lista_d = insere_no_posicao(minha_lista_d, 8, 1);
+
+    imprime_lista(minha_lista_d);
 
     verifica_valor_na_posicao(minha_lista_d, 1);
 
-    busca_no(minha_lista_d, 2);
+    imprime_nos_reverso(minha_lista_d);
 
-    //remove_no_valor(minha_lista_d, 2);
+    busca_no(minha_lista_d, 8);
 
-    //insere_no_inicio(minha_lista_d, 9);
+    printf("Removendo valor: \n");
 
-    //libera_lista(minha_lista_d);
+    minha_lista_d = remove_no_valor(minha_lista_d, 2); // se o numero que for removido estiver junto de outro igual não sera removido o segundo, não consegue remover o fim
+
+    imprime_lista(minha_lista_d);
+
+    imprime_nos_reverso(minha_lista_d);
+
+    printf("Inserindo no inicio: \n");
+
+    minha_lista_d = insere_no_inicio(minha_lista_d, 9);
+
+    imprime_lista(minha_lista_d); 
+
+    imprime_nos_reverso(minha_lista_d);
+
+    printf("Liberando lista: \n");
+
+    minha_lista_d = libera_lista(minha_lista_d);
+
+    printf("O tamanho e %d\n", minha_lista_d.quantidade);  
     
     return 0;
 
-} 
+}
